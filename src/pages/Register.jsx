@@ -2,21 +2,26 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { ButtonWithSpinner } from '../components/Spinner';
 
 const Register = () => {
   const [formData, setFormData] = useState({ nombre: '', email: '', password: '', rol: 'consumidor', zona: '', telefono: '' });
+  const [loading, setLoading] = useState(false);
   const { register } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await register(formData);
       showToast('¡Cuenta creada con éxito!', 'success');
       navigate('/');
     } catch (err) {
       showToast(err.response?.data?.msg || 'Error al registrarse', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -91,12 +96,13 @@ const Register = () => {
             <option value="productor">Quiero vender mis productos</option>
           </select>
         </div>
-        <button 
-          type="submit" 
+        <ButtonWithSpinner
+          type="submit"
+          loading={loading}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition transform active:scale-[0.98] mt-4"
         >
           Registrarse
-        </button>
+        </ButtonWithSpinner>
       </form>
     </div>
   );

@@ -28,7 +28,7 @@ const Navbar = () => {
             </span>
           </Link>
           
-          <div className="hidden lg:block">
+          <div className="hidden lg:block" data-tour="role-switch">
             <RoleSwitch />
           </div>
         </div>
@@ -38,6 +38,7 @@ const Navbar = () => {
           <Link 
             to="/explorar" 
             className="text-sm font-black text-gray-500 hover:text-green-600 uppercase tracking-widest transition-colors px-2 py-1"
+            data-tour="map"
           >
             Explorar
           </Link>
@@ -80,6 +81,7 @@ const Navbar = () => {
                   <Link 
                     to="/crear-producto" 
                     className="bg-green-50 text-green-700 px-4 py-2 rounded-xl font-black text-sm uppercase tracking-widest hover:bg-green-100 transition-colors"
+                    data-tour="add-product"
                   >
                     + Producto
                   </Link>
@@ -90,6 +92,7 @@ const Navbar = () => {
                 to="/editar-perfil-usuario" 
                 className="text-sm font-black text-gray-500 hover:text-green-600 uppercase tracking-widest transition-colors px-2 py-1 flex items-center gap-2 group relative"
                 title="Mi Perfil"
+                data-tour="profile"
               >
                 {user.rolActivo === 'productor' && (
                   <>
@@ -149,102 +152,120 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Menu Dropdown - Simplificado */}
       {isOpen && (
         <div className="md:hidden bg-white border-b border-gray-100 animate-in slide-in-from-top duration-200">
-          <div className="container mx-auto px-4 py-6 flex flex-col gap-4">
-            <Link 
-              to="/explorar" 
-              onClick={() => setIsOpen(false)}
-              className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
-            >
-              Explorar Mapa
-            </Link>
-            {user ? (
-              <>
-                <div className="bg-gray-50 p-4 rounded-2xl mb-2">
-                  <RoleSwitch />
-                </div>
-
+          <div className="container mx-auto px-4 py-6 flex flex-col gap-3">
+            {/* Navegación principal */}
+            <div className="space-y-2">
+              <Link 
+                to="/explorar" 
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 text-lg font-black text-gray-700 uppercase tracking-widest p-3 hover:bg-gray-50 rounded-xl transition-colors"
+              >
+                <span className="text-xl">🗺️</span>
+                Explorar
+              </Link>
+              
+              {user && (
                 <Link 
                   to="/mis-pedidos" 
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
+                  className="flex items-center gap-3 text-lg font-black text-gray-700 uppercase tracking-widest p-3 hover:bg-gray-50 rounded-xl transition-colors"
                 >
-                  {user.rolActivo === 'productor' ? 'Mis Ventas' : 'Mis Pedidos'}
+                  <span className="text-xl">📦</span>
+                  {user.rolActivo === 'productor' ? 'Ventas' : 'Pedidos'}
                 </Link>
+              )}
+            </div>
+
+            {user ? (
+              <>
+                {/* Sección de perfil */}
+                <div className="border-t border-gray-100 pt-3 mt-3">
+                  <div className="bg-gray-50 p-3 rounded-xl mb-3">
+                    <RoleSwitch />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Link 
+                      to="/editar-perfil-usuario" 
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 text-lg font-black text-gray-600 uppercase tracking-widest p-3 hover:bg-gray-50 rounded-xl transition-colors"
+                    >
+                      <span className="text-xl">👤</span>
+                      Mi Perfil
+                    </Link>
+                    
+                    <Link 
+                      to="/red-de-confianza" 
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-3 text-lg font-black text-gray-600 uppercase tracking-widest p-3 hover:bg-gray-50 rounded-xl transition-colors"
+                    >
+                      <span className="text-xl">🤝</span>
+                      Red de Confianza
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Acciones rápidas - Solo para productores */}
                 {user.rolActivo === 'productor' && (
-                  <Link 
-                    to="/mis-trueques" 
-                    onClick={() => setIsOpen(false)}
-                    className="text-lg font-black text-blue-600 uppercase tracking-widest p-2 hover:bg-blue-50 rounded-xl transition-colors"
+                  <div className="border-t border-gray-100 pt-3 mt-3">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 px-3">
+                      Acciones Rápidas
+                    </p>
+                    <div className="space-y-2">
+                      <Link 
+                        to="/mis-trueques" 
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 text-lg font-black text-blue-600 uppercase tracking-widest p-3 hover:bg-blue-50 rounded-xl transition-colors"
+                      >
+                        <span className="text-xl">🔄</span>
+                        Trueques
+                      </Link>
+                      <Link 
+                        to="/mis-publicaciones" 
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 text-lg font-black text-gray-600 uppercase tracking-widest p-3 hover:bg-gray-50 rounded-xl transition-colors"
+                      >
+                        <span className="text-xl">📋</span>
+                        Publicaciones
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
+                {/* Cerrar sesión */}
+                <div className="border-t border-gray-100 pt-3 mt-3">
+                  <button 
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 text-lg font-black text-red-500 uppercase tracking-widest p-3 text-left hover:bg-red-50 rounded-xl transition-colors w-full"
                   >
-                    🤝 Mis Trueques
-                  </Link>
-                )}
-                <Link 
-                  to="/editar-perfil-usuario" 
-                  onClick={() => setIsOpen(false)}
-                  className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
-                >
-                  Mi Perfil
-                </Link>
-                <Link 
-                  to="/red-de-confianza" 
-                  onClick={() => setIsOpen(false)}
-                  className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
-                >
-                  🤝 Red de Confianza
-                </Link>
-                {user.rolActivo === 'productor' && (
-                  <>
-                    <Link 
-                      to="/mis-publicaciones" 
-                      onClick={() => setIsOpen(false)}
-                      className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
-                    >
-                      Mis Publicaciones
-                    </Link>
-                    <Link 
-                      to="/editar-perfil" 
-                      onClick={() => setIsOpen(false)}
-                      className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
-                    >
-                      Editar Perfil
-                    </Link>
-                    <Link 
-                      to="/crear-producto" 
-                      onClick={() => setIsOpen(false)}
-                      className="text-lg font-black text-green-600 uppercase tracking-widest p-2 hover:bg-green-50 rounded-xl transition-colors"
-                    >
-                      + Publicar Producto
-                    </Link>
-                  </>
-                )}
-                <button 
-                  onClick={handleLogout}
-                  className="text-lg font-black text-red-500 uppercase tracking-widest p-2 text-left hover:bg-red-50 rounded-xl transition-colors"
-                >
-                  Cerrar Sesión
-                </button>
+                    <span className="text-xl">🚪</span>
+                    Cerrar Sesión
+                  </button>
+                </div>
               </>
             ) : (
-              <>
+              /* Sección no autenticado */
+              <div className="space-y-3 pt-3">
                 <Link 
                   to="/login" 
                   onClick={() => setIsOpen(false)}
-                  className="text-lg font-black text-gray-700 uppercase tracking-widest p-2 hover:bg-gray-50 rounded-xl transition-colors"
+                  className="flex items-center gap-3 text-lg font-black text-gray-700 uppercase tracking-widest p-3 hover:bg-gray-50 rounded-xl transition-colors"
                 >
+                  <span className="text-xl">🔑</span>
                   Ingresar
                 </Link>
                 <Link 
                   to="/register" 
                   onClick={() => setIsOpen(false)}
-                  className="bg-green-600 text-white p-4 rounded-2xl font-black text-center uppercase tracking-widest shadow-lg shadow-green-100 active:scale-[0.98] transition-transform"
+                  className="bg-green-600 text-white p-4 rounded-xl font-black text-center uppercase tracking-widest shadow-lg shadow-green-100 active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
                 >
+                  <span className="text-xl">🌱</span>
                   Unirse a Tupambaé
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

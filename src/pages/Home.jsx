@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { producerService } from '../services/api';
 import { Link } from 'react-router-dom';
 import MapaProductores from '../components/MapaProductores';
+import SkeletonLoader, { ProductListSkeleton, MapSkeleton } from '../components/SkeletonLoader';
 import { useRol } from '../hooks/useRol';
 import { useToast } from '../context/ToastContext';
 import { useLocation } from '../context/LocationContext';
@@ -85,7 +86,19 @@ const Home = () => {
     setManualMode(false);
   };
 
-  if (loading && producers.length === 0) return <div className="text-center py-20 font-black text-gray-400 uppercase tracking-widest">Cargando productores...</div>;
+  if (loading && producers.length === 0) {
+  return (
+    <div className="max-w-6xl mx-auto">
+      <div className="mb-8">
+        <MapSkeleton />
+      </div>
+      <div className="mb-8">
+        <h3 className="text-lg font-black text-gray-800 mb-4 uppercase tracking-widest">Productores cerca de tu zona</h3>
+        <ProductListSkeleton count={4} />
+      </div>
+    </div>
+  );
+}
 
   return (
     <div className="max-w-6xl mx-auto">

@@ -5,7 +5,6 @@ import L from 'leaflet';
 import { useNavigate } from 'react-router-dom';
 import { getCategoryIcon, getCategoryLabel } from '../constants/categories';
 import MobileMapOptimization from './MobileMapOptimization';
-import MapInstanceHook from './MapInstanceHook';
 
 // Fix para los iconos de Leaflet en React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -23,7 +22,7 @@ L.Marker.prototype.options.icon = DefaultIcon;
 // Componente para controlar el movimiento del mapa
 const MapController = memo(({ center, zoom, forceFly }) => {
   const map = useMap();
-  React.useEffect(() => {
+  useEffect(() => {
     if (center && forceFly) {
       map.flyTo(center, zoom || 14, {
         duration: 1.5
@@ -31,7 +30,7 @@ const MapController = memo(({ center, zoom, forceFly }) => {
     }
   }, [center, zoom, map, forceFly]);
   return null;
-});
+};
 
 // Componente para capturar clicks y seleccionar ubicación manual
 const ClickHandler = memo(({ onMapClick }) => {
@@ -43,7 +42,7 @@ const ClickHandler = memo(({ onMapClick }) => {
     click: handleClick
   });
   return null;
-});
+};
 
 // Función para agrupar productores por cercanía geográfica (memoizada)
 const groupProducersByLocation = (producers) => {
@@ -69,69 +68,10 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
   const navigate = useNavigate();
   const groupedProducers = React.useMemo(() => groupProducersByLocation(producers), [producers]);
   const hasCustomCenter = !!userLocation;
-  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
-  const [touchStart, setTouchStart] = React.useState(null);
-  const [touchEnd, setTouchEnd] = React.useState(null);
-  const [mapInstance, setMapInstance] = React.useState(null);
-
-  // Detect mobile screen size
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Touch gesture handlers for mobile
-  const handleTouchStart = (e) => {
-    setTouchEnd(null);
-    setTouchStart({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY,
-      time: Date.now()
-    });
-  };
-
-  const handleTouchMove = (e) => {
-    setTouchEnd({
-      x: e.targetTouches[0].clientX,
-      y: e.targetTouches[0].clientY
-    });
-  };
-
-  const handleTouchEnd = (e) => {
-    if (!touchStart || !touchEnd) return;
-    
-    const deltaX = touchEnd.x - touchStart.x;
-    const deltaY = touchEnd.y - touchStart.y;
-    const deltaTime = Date.now() - touchStart.time;
-    
-    // Detect swipe gestures
-    const minSwipeDistance = 50;
-    const maxSwipeTime = 300;
-    
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance && deltaTime < maxSwipeTime) {
-      // Horizontal swipe detected
-      if (deltaX > 0) {
-        // Swipe right - could trigger next action
-        console.log('Swipe right detected');
-      } else {
-        // Swipe left - could trigger previous action
-        console.log('Swipe left detected');
-      }
-    }
-  };
+  const isMobile = window.innerWidth < 768;
 
   return (
-    <div 
-      className={`h-[450px] w-full rounded-3xl overflow-hidden shadow-inner border border-gray-100 mb-8 z-0 relative ${
-        isMobile ? 'touch-pan-y' : ''
-      }`}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-    >
+    <div className="h-[450px] w-full rounded-3xl overflow-hidden shadow-inner border border-gray-100 mb-8 z-0 relative">
       <style>
         {`
           .leaflet-popup-content-wrapper {
@@ -148,19 +88,6 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
             background: #888;
             border-radius: 2px;
           }
-          /* Mobile optimizations */
-          .leaflet-control-zoom {
-            ${isMobile ? 'font-size: 18px !important; padding: 8px !important;' : ''}
-          }
-          .leaflet-control-zoom a {
-            ${isMobile ? 'width: 40px !important; height: 40px !important; line-height: 40px !important;' : ''}
-          }
-          .leaflet-popup-content {
-            ${isMobile ? 'font-size: 14px !important;' : ''}
-          }
-          .custom-marker {
-            ${isMobile ? 'transform: scale(1.2) !important;' : ''}
-          }
         `}
       </style>
       <MapContainer 
@@ -168,11 +95,6 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
         zoom={zoom} 
         style={{ height: '100%', width: '100%' }}
         zoomControl={true}
-        zoomControlOptions={isMobile ? {
-          position: 'topright',
-          zoomInText: '+',
-          zoomOutText: '-'
-        } : undefined}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -180,7 +102,6 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
         />
         
         <MapController center={hasCustomCenter ? userLocation : center} zoom={zoom} forceFly={hasCustomCenter} />
-        <MapInstanceHook onMapReady={setMapInstance} />
         
         {onMapClick && <ClickHandler onMapClick={onMapClick} />}
         
@@ -189,12 +110,12 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
             key={`${group.lat}-${group.lng}-${index}`}
             position={[group.lat, group.lng]}
             icon={L.divIcon({
-              html: `<div class="flex items-center justify-center ${isMobile ? 'w-12 h-12' : 'w-8 h-8'} bg-green-600 rounded-full shadow-lg border-2 border-white custom-marker">
-                <span class="text-white ${isMobile ? 'text-sm' : 'text-xs'} font-bold">${group.producers.length}</span>
+              html: `<div class="flex items-center justify-center w-8 h-8 bg-green-600 rounded-full shadow-lg border-2 border-white">
+                <span class="text-white text-xs font-bold">${group.producers.length}</span>
               </div>`,
               className: 'custom-marker',
-              iconSize: isMobile ? [48, 48] : [32, 32],
-              iconAnchor: isMobile ? [24, 24] : [16, 16]
+              iconSize: [32, 32],
+              iconAnchor: [16, 16]
             })}
           >
             <Popup maxWidth={300} className="custom-popup">
@@ -220,9 +141,7 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
                           </div>
                           <button
                             onClick={() => navigate(`/productor/${producer._id}`)}
-                            className={`mt-2 w-full bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition-colors ${
-                              isMobile ? 'py-3 px-4 text-base' : 'py-2 px-4 text-sm'
-                            }`}
+                            className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium py-2 px-4 rounded-lg transition-colors"
                           >
                             Ver Productos
                           </button>
@@ -238,7 +157,7 @@ const MapaProductores = memo(({ producers, center = [-34.6037, -58.3816], zoom =
       </MapContainer>
       
       {/* Optimizaciones para móvil */}
-      <MobileMapOptimization map={mapInstance} isMobile={isMobile} />
+      <MobileMapOptimization map={undefined} isMobile={isMobile} />
       
       <div className="bg-amber-50 p-2 text-center text-[10px] text-amber-700 font-bold uppercase tracking-widest">
         ⚠️ Ubicaciones aproximadas para proteger la privacidad de los productores

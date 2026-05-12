@@ -2,22 +2,27 @@ import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
+import { ButtonWithSpinner } from '../components/Spinner';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const { login } = useContext(AuthContext);
   const { showToast } = useToast();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       await login(email, password);
       showToast('¡Bienvenido de nuevo!', 'success');
       navigate('/');
     } catch (err) {
       showToast(err.response?.data?.msg || 'Error al iniciar sesión', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -48,12 +53,13 @@ const Login = () => {
             required 
           />
         </div>
-        <button 
-          type="submit" 
+        <ButtonWithSpinner
+          type="submit"
+          loading={loading}
           className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition transform active:scale-[0.98]"
         >
           Iniciar Sesión
-        </button>
+        </ButtonWithSpinner>
       </form>
     </div>
   );
